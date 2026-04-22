@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Voucher Life - شات بوت الدعم الذكي</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', 'Tahoma', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f2b3d 0%, #1b4f6e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 500px;
+            height: 750px;
+            background: #f5f7fb;
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #0a7e7c 0%, #0e5c6b 100%);
+            padding: 16px;
+            color: white;
+            text-align: center;
+        }
+
+        .chat-header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .chat-header h1 span {
+            font-size: 28px;
+        }
+
+        .chat-header p {
+            font-size: 11px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        .status {
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* زر تبديل اللغة */
+        .lang-switch {
+            position: absolute;
+            top: 12px;
+            left: 16px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+
+        .lang-switch:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            max-width: 85%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.bot {
+            align-items: flex-start;
+        }
+
+        .message.user {
+            align-items: flex-end;
+            align-self: flex-end;
+        }
+
+        .message-bubble {
+            padding: 10px 14px;
+            border-radius: 18px;
+            font-size: 13px;
+            line-height: 1.45;
+            word-wrap: break-word;
+        }
+
+        .message.bot .message-bubble {
+            background: white;
+            color: #1e293b;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #0a7e7c 0%, #0e5c6b 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 9px;
+            color: #94a3b8;
+            margin-top: 4px;
+            margin-inline: 8px;
+        }
+
+        .quick-replies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .quick-reply-btn {
+            background: #e2e8f0;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-family: inherit;
+            color: #0f2b3d;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-reply-btn:hover {
+            background: #cbd5e1;
+            transform: scale(1.02);
+        }
+
+        .chat-input-area {
+            background: white;
+            padding: 10px 12px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: #0a7e7c;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #0a7e7c 0%, #0e5c6b 100%);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .send-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: white;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 18px;
+            width: fit-content;
+        }
+
+        .typing-indicator span {
+            width: 6px;
+            height: 6px;
+            background: #94a3b8;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-8px); opacity: 1; }
+        }
+
+        .chat-footer {
+            text-align: center;
+            padding: 8px;
+            font-size: 9px;
+            color: #94a3b8;
+            background: #f5f7fb;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #e2e8f0;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #0a7e7c;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <button class="lang-switch" id="langSwitch">English</button>
+            <h1>
+                <span>🎟️</span> 
+                Voucher Life
+            </h1>
+            <p id="subtitle">خصومات على الخدمات الطبية | Medical Discounts</p>
+            <div class="status">
+                <div class="status-dot"></div>
+                <span id="statusText">متصل · خدمة 24 ساعة | Online 24/7</span>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages"></div>
+
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chatInput" placeholder="اكتب سؤالك هنا... | Type your question..." autocomplete="off">
+            <button class="send-btn" id="sendBtn">
+                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </div>
+        <div class="chat-footer">
+            🔒 محادثة آمنة | للدعم: 01007190880 | Support: 01007190880
+        </div>
+    </div>
+
+    <script>
+        // ========================
+        // قاعدة المعرفة - العربية
+        // ========================
+        
+        const arabic = {
+            welcome: "👋 أهلاً بك في خدمة عملاء Voucher Life!\n\nأنا المساعد الذكي للتطبيق. أساعدك في:\n\n✅ معرفة أنواع الخصم (قسيمة 24 ساعة / اشتراك سنوي)\n✅ عرض جميع الشركاء ونسب الخصم\n✅ شرح طريقة استخدام القسيمة\n✅ أعلى نسبة خصم فين (59% في الصفوة)\n✅ الاشتراك السنوي (فردي 500 / عائلي 800)\n✅ الدعم الفني وحل المشكلات\n\nاسأل ما تريد، وسأجيبك فوراً! 💬",
+            
+            partners: "🏥 شركاؤنا ونسب الخصم:\n\n🏟️ المستشفيات:\n• الصفوة: 59% (كشف استشاري وطوارئ)\n• المحور: 50% (كشف استشاري وطوارئ)\n• دار العظام: 50% (كشف استشاري)\n• Neuro Espitalia: 50% (كشف استشاري وطوارئ)\n• رفيدة: 20% (ولادة)\n\n🧪 المعامل:\n• رويال لاب: 50%\n• المختبر: 20%\n• البرج: 10%\n\n📷 مراكز الأشعة:\n• OCT: 40%\n• البرج سكان: 30%\n\n🩺 العيادات:\n• Clinica: 50% (كشف استشاري)\n\n💊 الصيدليات:\n• د. أحمد يحيى: 11%",
+            
+            topDiscount: "🏆 أعلى نسبة خصم عندنا هي 59% في **مستشفى الصفوة** على كشف الاستشاري وكشف الطوارئ.\n\n🥈 50% في: المحور، دار العظام، Neuro Espitalia، Clinica، رويال لاب\n🥉 40% في مركز OCT للأشعة\n\nعايز تعرف خصم خدمة معينة؟ قولي اسم الخدمة أو الشريك وأقولك التفاصيل.",
+            
+            discountTypes: "نقدم نوعين من الخصومات:\n\n🟢 اشتراك سنوي (فردي أو عائلي):\n• فردي: 500 جنيه / سنة\n• عائلي (4 أفراد): 800 جنيه / سنة\n• إضافة فرد إضافي: +200 جنيه\n• يمنح خصومات مستمرة طوال العام على جميع الشركاء\n\n🟡 قسيمة لمرة واحدة:\n• صالحة لمدة 24 ساعة فقط\n• تستخدم مرة واحدة\n• السعر يختلف حسب الخدمة - افتح التطبيق وابحث عن الخدمة اللي تبيها",
+            
+            howToUse: "📖 طريقة استخدام القسيمة:\n\n1️⃣ افتح تطبيق Voucher Life\n2️⃣ اختر الشريك (مستشفى، معمل، إلخ)\n3️⃣ ابحث عن الخدمة المطلوبة\n4️⃣ اشتري القسيمة\n5️⃣ خلال 24 ساعة، اذهب لمقدم الخدمة\n6️⃣ قدم القسيمة (رقم أو باركود) قبل الدفع\n7️⃣ احصل على الخصم فوراً!\n\n⚠️ تذكر: القسيمة صالحة 24 ساعة فقط ولمرة واحدة.",
+            
+            validity: "⏰ مدة صلاحية القسيمة:\n\n• القسيمة لمرة واحدة: **24 ساعة فقط** من لحظة الشراء\n• يجب استخدامها خلال هذه الفترة وإلا تنتهي صلاحيتها\n• الاشتراك السنوي: 12 شهراً من تاريخ الاشتراك\n\nننصحك بعدم شراء القسيمة إلا قبل التوجه مباشرة لمقدم الخدمة.",
+            
+            refund: "💰 سياسة الاسترداد:\n\nللاستفسار عن استرداد قسيمة، يرجى التواصل مع الدعم على:\n📞 01007190880\n\nكل حالة بندرسها لوحدها.\n\n⚠️ ملاحظة: القسائم المستخدمة غير قابلة للاسترداد.",
+            
+            support: "📞 الدعم الفني:\n\n• رقم الدعم: 01007190880\n• متاح 24 ساعة (شات بوت)\n• خارج أوقات العمل البشرية، الشات بوت هو الخط الأول\n• للاستفسار عن الاسترداد أو المشاكل الفنية، اتصل بينا",
+            
+            annualSubscription: "📅 الاشتراك السنوي:\n\n• فردي: 500 جنيه / سنة\n• عائلي (4 أفراد): 800 جنيه / سنة\n• إضافة فرد إضافي: +200 جنيه\n\n✅ يمنح خصومات مستمرة طوال العام\n✅ نفس نسب الخصم المذكورة لكل شريك\n✅ يغطي جميع الشركاء الحاليين والمستقبليين\n✅ يناسب اللي بيتردد على مقدمي الخدمات بانتظام",
+            
+            download: "📱 تحميل التطبيق:\n\n• Google Play: https://play.google.com/store/apps/details?id=com.voucher_life.app\n• App Store: لم يتم توفيره بعد (قريباً)",
+            
+            payment: "💳 وسائل الدفع:\n\n• بطاقات الائتمان (فيزا، ماستركارد، Meeza)\n• المحافظ الإلكترونية (فودافون كاش، إنستاباي، أورانج كاش)\n• Tap on Phone (دفع بدون تلامس)\n• روابط دفع عن بُعد\n\nجميع المعاملات عبر Paymob (بوابة دفع آمنة)",
+            
+            comparison: "📊 مقارنة بين الاشتراك السنوي والقسيمة لمرة واحدة:\n\nالاشتراك السنوي:\n✅ خصومات مستمرة طول السنة\n✅ يناسب المترددين على الخدمات بانتظام\n✅ فردي 500 جنيه / عائلي 800 جنيه\n\nالقسيمة لمرة واحدة:\n✅ لخدمة محددة فقط\n✅ صالحة 24 ساعة\n✅ يناسب الحالات العاجلة أو اللي محتاج خدمة واحدة\n✅ السعر حسب الخدمة (يظهر في التطبيق)",
+            
+            rofayda: "🏥 مستشفى رفيدة (ولادة):\n• كشف استشاري: 20%\n• خدمات عيادات خارجية: 20%\n• كشف طوارئ: 20%\n• تحاليل: 20%\n• أشعة: 20%\n• عمليات: 10%\n• إقامة: 10%\n• حضانات أطفال: 10%",
+            
+            safwa: "🏥 مستشفى الصفوة - أعلى خصم 59%:\n• كشف استشاري: 59%\n• كشف طوارئ: 59%\n• خدمات عيادات: 25%\n• تحاليل وأشعة: 25%\n• عمليات: 20%\n• إقامة: 20%",
+            
+            mehwar: "🏥 مستشفى المحور:\n• كشف استشاري: 50%\n• كشف طوارئ: 50%\n• خدمات عيادات: 25%\n• تحاليل وأشعة: 25%\n• عمليات: 25%\n• إقامة: 25%",
+            
+            darelezam: "🏥 مستشفى دار العظام:\n• كشف استشاري: 50%\n• خدمات عيادات خارجية: 30%\n• عمليات جراحية: 30%\n• إقامة: 30%",
+            
+            neuro: "🏥 مستشفى Neuro Espitalia:\n• كشف استشاري: 50%\n• كشف طوارئ: 50%\n• خدمات عيادات: 20%\n• تحاليل وأشعة: 20%\n• عمليات: 20%\n• إقامة: 20%",
+            
+            royal: "🧪 رويال لاب: 50% خصم على جميع التحاليل الطبية",
+            
+            elborg: "🧪 معامل البرج: 10% خصم على الفحوصات المعملية والزيارات المنزلية",
+            
+            mokhtabar: "🧪 معامل المختبر: 20% خصم على الفحوصات المعملية والزيارات المنزلية",
+            
+            oct: "📷 مركز OCT للأشعة: 40% خصم على الرنين المغناطيسي، المقطعي، الأشعة السينية، الموجات فوق الصوتية، تخطيط صدى القلب",
+            
+            elborgScan: "📷 مركز البرج للأشعة: 30% خصم على جميع خدمات الأشعة",
+            
+            clinica: "🩺 عيادات Clinica: 50% خصم على كشف الاستشاري، 25% على العمليات والإقامة",
+            
+            pharmacy: "💊 صيدلية د. أحمد يحيى:\n• أدوية ومستحضرات مصرية: 11%\n• أدوية ومستحضرات مستوردة: 6%",
+            
+            default: "شكراً لتواصلك مع Voucher Life. 😊\n\nلحصول على معلومات دقيقة، يمكنك سؤالي عن:\n\n• أنواع الخصم (قسيمة/اشتراك سنوي)\n• قائمة الشركاء ونسب الخصم\n• أعلى نسبة خصم (59% في الصفوة)\n• طريقة استخدام القسيمة\n• مدة الصلاحية (24 ساعة)\n• رقم الدعم الفني\n\nأو اكتب 'مساعدة' لعرض الخيارات مرة أخرى.",
+            
+            help: "🔍 المساعدة - يمكنك أن تسألني عن:\n\n🏥 الشركاء - لعرض جميع الشركاء ونسب الخصم\n🏆 أعلى خصم - لمعرفة أعلى نسبة خصم فين\n🎫 أنواع الخصم - للفرق بين الاشتراك والقسيمة\n📖 طريقة الاستخدام - كيف تشتري وتستخدم القسيمة\n⏰ الصلاحية - كم مدة صلاحية القسيمة\n💰 الاسترداد - سياسة استرداد القسائم\n📞 الدعم - رقم التواصل للدعم الفني\n📱 تحميل - رابط تحميل التطبيق\n💳 الدفع - وسائل الدفع المتاحة\n📊 مقارنة - الفرق بين الاشتراك والقسيمة\n\nأو اكتب اسم أي شريك (مثل: الصفوة، المحور، رويال لاب) لمعرفة تفاصيل خصمه."
+        };
+
+        // ========================
+        // قاعدة المعرفة - الإنجليزية
+        // ========================
+        
+        const english = {
+            welcome: "👋 Welcome to Voucher Life customer support!\n\nI'm the AI assistant for the app. I can help you with:\n\n✅ Discount types (24h voucher / annual subscription)\n✅ All partners and discount rates\n✅ How to use the voucher\n✅ Highest discount (59% at Al Safwa Hospital)\n✅ Annual subscription (Individual 500 EGP / Family 800 EGP)\n✅ Technical support\n\nAsk me anything! 💬",
+            
+            partners: "🏥 Our Partners & Discounts:\n\n🏟️ Hospitals:\n• Al Safwa: 59% (Consultation & Emergency)\n• Al Mehwar: 50% (Consultation & Emergency)\n• Dar Elezam: 50% (Consultation)\n• Neuro Espitalia: 50% (Consultation & Emergency)\n• Rofayda: 20% (Maternity)\n\n🧪 Labs:\n• Royal Lab: 50%\n• Al Mokhtabar: 20%\n• El Borg: 10%\n\n📷 Radiology Centers:\n• OCT: 40%\n• El Borg Scan: 30%\n\n🩺 Clinics:\n• Clinica: 50% (Consultation)\n\n💊 Pharmacies:\n• Dr. Ahmed Yahia: 11%",
+            
+            topDiscount: "🏆 Highest discount is 59% at **Al Safwa Hospital** on Consultant and Emergency visits.\n\n🥈 50% at: Al Mehwar, Dar Elezam, Neuro Espitalia, Clinica, Royal Lab\n🥉 40% at OCT Radiology Center\n\nWant to know a specific service discount? Tell me the service or partner name.",
+            
+            discountTypes: "We offer 2 types of discounts:\n\n🟢 Annual Subscription (Individual/Family):\n• Individual: 500 EGP/year\n• Family (4 members): 800 EGP/year\n• Additional member: +200 EGP\n• Continuous discounts all year on all partners\n\n🟡 One-time Voucher:\n• Valid for 24 hours only\n• Single use only\n• Price varies by service - open the app and search for your service",
+            
+            howToUse: "📖 How to use the voucher:\n\n1️⃣ Open Voucher Life app\n2️⃣ Choose a partner (Hospital, Lab, etc.)\n3️⃣ Search for the service you need\n4️⃣ Purchase the voucher\n5️⃣ Within 24 hours, go to the provider\n6️⃣ Show the voucher (code or barcode) before payment\n7️⃣ Get your discount instantly!\n\n⚠️ Remember: Voucher valid for 24 hours only, one-time use.",
+            
+            validity: "⏰ Voucher Validity:\n\n• One-time voucher: **Only 24 hours** from purchase\n• Must be used within this period or it expires\n• Annual subscription: 12 months from subscription date\n\nWe recommend buying the voucher right before going to the provider.",
+            
+            refund: "💰 Refund Policy:\n\nFor refund inquiries, please contact support at:\n📞 01007190880\n\nEach case is reviewed individually.\n\n⚠️ Note: Used vouchers are non-refundable.",
+            
+            support: "📞 Technical Support:\n\n• Support number: 01007190880\n• Available 24/7 (Chatbot)\n• Outside human support hours, chatbot is the first line\n• For refunds or technical issues, call us",
+            
+            annualSubscription: "📅 Annual Subscription:\n\n• Individual: 500 EGP/year\n• Family (4 members): 800 EGP/year\n• Additional member: +200 EGP\n\n✅ Continuous discounts all year\n✅ Same discount rates as listed for each partner\n✅ Covers all current and future partners\n✅ Perfect for regular visitors to medical providers",
+            
+            download: "📱 Download the app:\n\n• Google Play: https://play.google.com/store/apps/details?id=com.voucher_life.app\n• App Store: Not available yet (coming soon)",
+            
+            payment: "💳 Payment Methods:\n\n• Credit Cards (Visa, Mastercard, Meeza)\n• Digital Wallets (Vodafone Cash, Instapay, Orange Cash)\n• Tap on Phone (contactless payment)\n• Payment links for remote payment\n\nAll transactions via Paymob (secure payment gateway)",
+            
+            comparison: "📊 Comparison: Annual Subscription vs One-time Voucher\n\nAnnual Subscription:\n✅ Continuous discounts all year\n✅ Perfect for regular visitors\n✅ Individual 500 EGP / Family 800 EGP\n\nOne-time Voucher:\n✅ For a specific service only\n✅ Valid 24 hours\n✅ Perfect for urgent cases or single service needs\n✅ Price varies by service (shown in app)",
+            
+            rofayda: "🏥 Rofayda Hospital (Maternity):\n• Consultant visit: 20%\n• Outpatient services: 20%\n• Emergency visit: 20%\n• Lab tests: 20%\n• Radiology: 20%\n• Surgeries: 10%\n• Hospital stay: 10%\n• NICU: 10%",
+            
+            safwa: "🏥 Al Safwa Hospital - Highest 59%:\n• Consultant visit: 59%\n• Emergency visit: 59%\n• Outpatient services: 25%\n• Labs & Radiology: 25%\n• Surgeries: 20%\n• Hospital stay: 20%",
+            
+            mehwar: "🏥 Al Mehwar Hospital:\n• Consultant visit: 50%\n• Emergency visit: 50%\n• Outpatient services: 25%\n• Labs & Radiology: 25%\n• Surgeries: 25%\n• Hospital stay: 25%",
+            
+            darelezam: "🏥 Dar Elezam Hospital:\n• Consultant visit: 50%\n• Outpatient services: 30%\n• Surgeries: 30%\n• Hospital stay: 30%",
+            
+            neuro: "🏥 Neuro Espitalia Hospital:\n• Consultant visit: 50%\n• Emergency visit: 50%\n• Outpatient services: 20%\n• Labs & Radiology: 20%\n• Surgeries: 20%\n• Hospital stay: 20%",
+            
+            royal: "🧪 Royal Lab: 50% off on all medical tests",
+            
+            elborg: "🧪 El Borg Lab: 10% off on lab tests and home visits",
+            
+            mokhtabar: "🧪 Al Mokhtabar Lab: 20% off on lab tests and home visits",
+            
+            oct: "📷 OCT Radiology Center: 40% off on MRI, CT scan, X-ray, Ultrasound, Echocardiography",
+            
+            elborgScan: "📷 El Borg Scan Center: 30% off on all radiology services",
+            
+            clinica: "🩺 Clinica Egypt: 50% off on consultant visit, 25% off on surgeries and hospital stay",
+            
+            pharmacy: "💊 Dr. Ahmed Yahia Pharmacy:\n• Egyptian products: 11%\n• Imported products: 6%",
+            
+            default: "Thank you for contacting Voucher Life. 😊\n\nFor accurate information, you can ask me about:\n\n• Discount types (voucher/annual subscription)\n• Partners and discount rates\n• Highest discount (59% at Al Safwa)\n• How to use the voucher\n• Validity period (24 hours)\n• Support number\n\nOr type 'help' to see all options.",
+            
+            help: "🔍 Help - You can ask me about:\n\n🏥 Partners - List all partners and discounts\n🏆 Top discount - Highest discount location\n🎫 Discount types - Difference between subscription and voucher\n📖 How to use - Purchase and usage instructions\n⏰ Validity - How long the voucher lasts\n💰 Refund - Refund policy\n📞 Support - Contact number for technical support\n📱 Download - App download link\n💳 Payment - Available payment methods\n📊 Compare - Comparison between subscription and voucher\n\nOr type any partner name (e.g., Al Safwa, Al Mehwar, Royal Lab) for their discount details."
+        };
+
+        let lang = 'ar'; // 'ar' or 'en'
+        let currentTexts = arabic;
+
+        function switchLanguage() {
+            if (lang === 'ar') {
+                lang = 'en';
+                currentTexts = english;
+                document.getElementById('langSwitch').innerText = 'العربية';
+                document.getElementById('subtitle').innerText = 'Medical Discounts | خصومات على الخدمات الطبية';
+                document.getElementById('statusText').innerText = 'Online 24/7 | متصل · خدمة 24 ساعة';
+                document.getElementById('chatInput').placeholder = 'Type your question here... | اكتب سؤالك هنا...';
+            } else {
+                lang = 'ar';
+                currentTexts = arabic;
+                document.getElementById('langSwitch').innerText = 'English';
+                document.getElementById('subtitle').innerText = 'خصومات على الخدمات الطبية | Medical Discounts';
+                document.getElementById('statusText').innerText = 'متصل · خدمة 24 ساعة | Online 24/7';
+                document.getElementById('chatInput').placeholder = 'اكتب سؤالك هنا... | Type your question here...';
+            }
+            // Clear messages and add welcome
+            document.getElementById('chatMessages').innerHTML = '';
+            addMessage(currentTexts.welcome, false);
+            showQuickReplies();
+        }
+
+        function getBotResponse(userMessage) {
+            const msg = userMessage.toLowerCase();
+            
+            // Help
+            if (msg.includes('help') || msg.includes('مساعدة')) {
+                return currentTexts.help;
+            }
+            // Partners
+            if (msg.includes('شريك') || msg.includes('شركاء') || msg.includes('partners')) {
+                return currentTexts.partners;
+            }
+            // Top discount
+            if (msg.includes('أعلى') || msg.includes('اعلى') || msg.includes('top') || msg.includes('أكبر') || (msg.includes('نسبة') && msg.includes('خصم'))) {
+                return currentTexts.topDiscount;
+            }
+            // Discount types
+            if ((msg.includes('نوع') || msg.includes('types')) && (msg.includes('خصم') || msg.includes('discount'))) {
+                return currentTexts.discountTypes;
+            }
+            // How to use
+            if (msg.includes('طريقة') || msg.includes('كيف') || msg.includes('how') || msg.includes('use') || msg.includes('استخدام') || msg.includes('استعمل')) {
+                return currentTexts.howToUse;
+            }
+            // Validity
+            if (msg.includes('مدة') || msg.includes('صلاحية') || msg.includes('valid') || msg.includes('24') || msg.includes('ساعة') || msg.includes('hour')) {
+                return currentTexts.validity;
+            }
+            // Refund
+            if (msg.includes('استرداد') || msg.includes('refund') || msg.includes('ترجع') || msg.includes('ترد')) {
+                return currentTexts.refund;
+            }
+            // Support
+            if (msg.includes('دعم') || msg.includes('support') || msg.includes('تواصل') || msg.includes('رقم') || msg.includes('contact')) {
+                return currentTexts.support;
+            }
+            // Annual subscription
+            if (msg.includes('اشتراك') || msg.includes('سنوي') || msg.includes('annual') || msg.includes('subscription') || msg.includes('عضوية')) {
+                return currentTexts.annualSubscription;
+            }
+            // Download
+            if (msg.includes('تحميل') || msg.includes('download') || msg.includes('play') || msg.includes('app') || msg.includes('تطبيق')) {
+                return currentTexts.download;
+            }
+            // Payment
+            if (msg.includes('دفع') || msg.includes('payment') || msg.includes('pay') || msg.includes('بطاقة') || msg.includes('card') || msg.includes('paymob')) {
+                return currentTexts.payment;
+            }
+            // Comparison
+            if (msg.includes('مقارنة') || msg.includes('compare') || msg.includes('فرق') || msg.includes('difference')) {
+                return currentTexts.comparison;
+            }
+            // Specific partners
+            if (msg.includes('رفيدة') || msg.includes('rofayda')) return currentTexts.rofayda;
+            if (msg.includes('صفوة') || msg.includes('safwa')) return currentTexts.safwa;
+            if (msg.includes('محور') || msg.includes('mehwar')) return currentTexts.mehwar;
+            if (msg.includes('دار العظام') || msg.includes('darelezam') || msg.includes('dar elezam')) return currentTexts.darelezam;
+            if (msg.includes('neuro') || msg.includes('اسبيتاليا')) return currentTexts.neuro;
+            if (msg.includes('رويال') || msg.includes('royal')) return currentTexts.royal;
+            if (msg.includes('البرج') && (msg.includes('معمل') || msg.includes('lab'))) return currentTexts.elborg;
+            if (msg.includes('المختبر') || msg.includes('mokhtabar')) return currentTexts.mokhtabar;
+            if (msg.includes('oct')) return currentTexts.oct;
+            if (msg.includes('البرج') && (msg.includes('اشعة') || msg.includes('scan'))) return currentTexts.elborgScan;
+            if (msg.includes('clinica') || msg.includes('كلينيكا')) return currentTexts.clinica;
+            if (msg.includes('صيدلية') || msg.includes('pharmacy') || msg.includes('يحيى')) return currentTexts.pharmacy;
+            
+            // Greetings
+            if (msg.includes('مرحب') || msg.includes('اهلا') || msg.includes('سلام') || msg.includes('hello') || msg.includes('hi')) {
+                return currentTexts.welcome;
+            }
+            if (msg.includes('شكر') || msg.includes('thank')) {
+                return "🙏 You're welcome! Is there anything else I can help you with?\n\n🙏 العفو! هل هناك شيء آخر يمكنني مساعدتك به؟";
+            }
+            
+            return currentTexts.default;
+        }
+
+        function addMessage(text, isUser = false) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.innerText = text;
+            
+            const timeSpan = document.createElement('div');
+            timeSpan.className = 'message-time';
+            const now = new Date();
+            timeSpan.innerText = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+            
+            messageDiv.appendChild(bubble);
+            messageDiv.appendChild(timeSpan);
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
+            return messageDiv;
+        }
+
+        function showTyping() {
+            const messagesDiv = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = 'typingIndicator';
+            const indicator = document.createElement('div');
+            indicator.className = 'typing-indicator';
+            indicator.innerHTML = '<span></span><span></span><span></span>';
+            typingDiv.appendChild(indicator);
+            messagesDiv.appendChild(typingDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function hideTyping() {
+            const typing = document.getElementById('typingIndicator');
+            if (typing) typing.remove();
+        }
+
+        function showQuickReplies() {
+            const quickContainer = document.createElement('div');
+            quickContainer.className = 'quick-replies';
+            let buttons = [];
+            if (lang === 'ar') {
+                buttons = ["🏥 الشركاء", "🎫 أنواع الخصم", "🏆 أعلى خصم", "📞 الدعم", "📖 طريقة الاستخدام", "💰 الاسترداد", "📊 مقارنة", "📱 تحميل"];
+            } else {
+                buttons = ["🏥 Partners", "🎫 Discount Types", "🏆 Top Discount", "📞 Support", "📖 How to Use", "💰 Refund", "📊 Compare", "📱 Download"];
+            }
+            buttons.forEach(text => {
+                const btn = document.createElement('button');
+                btn.className = 'quick-reply-btn';
+                btn.innerText = text;
+                btn.onclick = () => {
+                    const input = document.getElementById('chatInput');
+                    input.value = text;
+                    sendMessage();
+                };
+                quickContainer.appendChild(btn);
+            });
+            const lastMsg = document.querySelector('.message.bot:last-child .message-bubble');
+            if (lastMsg && !lastMsg.querySelector('.quick-replies')) {
+                lastMsg.appendChild(quickContainer);
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            addMessage(message, true);
+            input.value = '';
+            input.focus();
+            
+            showTyping();
+            
+            setTimeout(() => {
+                hideTyping();
+                const response = getBotResponse(message);
+                addMessage(response, false);
+                if (!message.toLowerCase().includes("شكر") && !message.toLowerCase().includes("thank")) {
+                    showQuickReplies();
+                }
+            }, 500 + Math.random() * 500);
+        }
+
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+        
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('langSwitch').addEventListener('click', switchLanguage);
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            addMessage(currentTexts.welcome, false);
+            showQuickReplies();
+        });
+    </script>
+</body>
+</html>
